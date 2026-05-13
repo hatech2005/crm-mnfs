@@ -433,9 +433,11 @@ export default function CustomerDetail() {
               style={{ backgroundColor: eventData.status === 'Chọn trạng thái' ? 'transparent' : 'var(--color-secondary)', color: eventData.status === 'Chọn trạng thái' ? 'inherit' : 'white' }}
             >
               <option value="Chọn trạng thái" style={{ color: "initial" }}>Chọn trạng thái</option>
-              {statuses.map(s => (
-                <option key={s.id} value={s.name} style={{ color: "initial" }}>{s.name}</option>
-              ))}
+              {statuses
+                .filter(s => !s.name.toLowerCase().includes('nhu cầu'))
+                .map(s => (
+                  <option key={s.id} value={s.name} style={{ color: "initial" }}>{s.name}</option>
+                ))}
             </select>
           </div>
 

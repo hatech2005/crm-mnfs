@@ -186,7 +186,7 @@ export const CustomerProvider = ({ children }) => {
       consultContent: customerData.consultContent || "",
       careHistory: customerData.careHistory || [],
       demands: demands,
-      status: customerData.status || "Mới"
+      status: "Mới"
     };
     setCustomers(prevCustomers => [newCustomer, ...prevCustomers]);
   };

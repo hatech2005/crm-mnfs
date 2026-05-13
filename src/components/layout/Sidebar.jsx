@@ -27,6 +27,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
   const navItems = [
     { name: "Trang chủ", path: "/dashboard", icon: BarChart2, roles: ["admin", "sale"] },
     { name: "Khách hàng", path: "/customers", icon: Users, roles: ["admin", "sale"] },
+    { name: "Chăm sóc khách hàng", path: "/customer-care", icon: Users, roles: ["admin", "sale"] },
     { name: "Sản phẩm", path: "/products", icon: Package, roles: ["admin", "sale"] },
     { name: "Đơn hàng", path: "/orders", icon: ShoppingCart, roles: ["admin", "sale"] },
     { name: "Nhân viên", path: "/employees", icon: Users, roles: ["admin"] },

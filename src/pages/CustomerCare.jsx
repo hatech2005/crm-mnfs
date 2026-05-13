@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useCustomerContext } from "../context/CustomerContext";
 import { useAuth } from "../context/AuthContext";
-import { Phone, Mail, MapPin, Users } from "lucide-react";
+import { Phone, MapPin, Users } from "lucide-react";
 import styles from "./CustomerDetail.module.css";
 
 export default function CustomerCare() {
@@ -9,21 +9,40 @@ export default function CustomerCare() {
   const { userRole, currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState("new");
 
-  // Khách mới - chưa có care history
+  const parseDate = (value) => {
+    if (!value) return null;
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
+  };
+
+  const isDemandCreatedAfterCustomer = (customer) => {
+    const latestDemand = customer.demands?.[0];
+    if (!latestDemand) return false;
+    const demandDate = parseDate(latestDemand.date);
+    const createdDate = parseDate(customer.createdAt);
+    if (!demandDate || !createdDate) return false;
+    const demandDay = demandDate.toISOString().slice(0, 10);
+    const createdDay = createdDate.toISOString().slice(0, 10);
+    return demandDay !== createdDay && demandDate > createdDate;
+  };
+
+  const matchRole = (customer) => userRole === "sale" ? customer.assigneeId === currentUser.uid : true;
+
   const newCustomers = customers.filter(c => {
-    const hasCarHistory = c.careHistory && c.careHistory.length > 0;
-    const matchRole = userRole === "sale" ? c.assigneeId === currentUser.uid : true;
-    return !hasCarHistory && matchRole;
+    const hasCareHistory = c.careHistory && c.careHistory.length > 0;
+    const hasDemandAddedAfterCreate = isDemandCreatedAfterCustomer(c);
+    return !hasCareHistory && !hasDemandAddedAfterCreate && matchRole(c);
   }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-  // Nhu cầu mới - khách cũ nhưng có demand
+  // Nhu cầu mới - khách chưa có chăm sóc nhưng được thêm nhu cầu mới sau khi tạo
   const demandsCustomers = customers.filter(c => {
-    const hasCarHistory = c.careHistory && c.careHistory.length > 0;
-    const latestDemand = c.demands?.[0];
-    const hasNewDemand = latestDemand && new Date(latestDemand.date) >= new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const matchRole = userRole === "sale" ? c.assigneeId === currentUser.uid : true;
-    return hasCarHistory && hasNewDemand && matchRole;
-  }).sort((a, b) => new Date(b.demands[0]?.date) - new Date(a.demands[0]?.date));
+    const hasCareHistory = c.careHistory && c.careHistory.length > 0;
+    return !hasCareHistory && isDemandCreatedAfterCustomer(c) && matchRole(c);
+  }).sort((a, b) => {
+    const aDate = parseDate(a.demands?.[0]?.date);
+    const bDate = parseDate(b.demands?.[0]?.date);
+    return (bDate?.getTime() || 0) - (aDate?.getTime() || 0);
+  });
 
   const formatDateDDMMYYYY = (dateStr) => {
     if (!dateStr) return '-';
@@ -161,7 +180,7 @@ export default function CustomerCare() {
                             {customer.assigneeName || customer.saleName || '-'}
                           </div>
                           <div style={{ fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>
-                            Phân số: {formatDateTime(customer.createdAt)}
+                            Ngày phân số: {formatDateTime(customer.createdAt)}
                           </div>
                         </div>
                         
@@ -249,7 +268,7 @@ export default function CustomerCare() {
                             {customer.assigneeName || customer.saleName || '-'}
                           </div>
                           <div style={{ fontSize: "0.75rem", color: "var(--color-text-secondary)" }}>
-                            Phân số: {formatDateTime(customer.createdAt)}
+                            Ngày phân số: {formatDateTime(customer.createdAt)}
                           </div>
                         </div>
 
